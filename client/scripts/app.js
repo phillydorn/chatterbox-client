@@ -2,10 +2,12 @@
 
 var app = {
  server: 'https://api.parse.com/1/classes/chatterbox',
- unique: []
+ unique: [],
+ username : "anonymous"
 };
 
 app.init = function() {
+  app.username = decodeURI(window.location.search).slice(10);
   app.fetch('initialStartup')
 }
 
@@ -35,12 +37,12 @@ app.fetch = function(room) {
   		app.clearMessages();
       for( var i = 0; i < data.results.length; i++) {
         if (data.results[i].text && data.results[i].text.indexOf('<') !== 0) {
-          if (data.results[i].roomname === room || room === 'initialStartup') {
-            app.addMessage(data.results[i]);
             if (app.unique.indexOf(data.results[i].roomname) === -1) {
               app.unique.push(data.results[i].roomname);
               app.addRoom(data.results[i].roomname);
             }
+          if (data.results[i].roomname === room || room === 'initialStartup') {
+            app.addMessage(data.results[i]);
           }
         }
       }
@@ -73,22 +75,36 @@ app.addRoom = function(room) {
 	$('#roomSelect').append("<option value = "+JSON.stringify(room)+">"+room+"</option>");
 }
 
+app.roomRefresh = function() {
+  var $room = $('#roomSelect').val();
+  app.fetch($room);
+}
+
 $(document).ready(function(){
   app.init();
 
 	$('#roomSelect').change(function() {
-		var $room = $('#roomSelect').val();
-		app.fetch($room);
+		app.roomRefresh();
 	})
+
+  $('.refresh').click(function() {
+    app.roomRefresh();
+  })
 
 	$('.submitBtn').click(function() {
       var message = {
       	text: $('.messageBox').val(),
       	roomname : $('#roomSelect').val(),
-      	username: decodeURI(window.location.search).slice(10)
+      	username: app.username 
       }
       app.send(message);
       app.addMessage(message)
       app.fetch($('#roomSelect').val());
+      $('.messageBox').val('');
 	})
+
+  $('.roomBtn').click(function () {
+    app.addRoom($('.roomBox').val());
+    $('.roomBox').val('');
+  })
 })
