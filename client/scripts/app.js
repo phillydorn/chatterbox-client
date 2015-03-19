@@ -2,6 +2,7 @@
 
 var app = {
  server: 'https://api.parse.com/1/classes/chatterbox',
+ unique: []
 };
 
 app.init = function() {
@@ -32,13 +33,12 @@ app.fetch = function(room) {
 	  data: {'order': '-createdAt'},
 	  success: function (data) {
   		app.clearMessages();
-      var unique = []
       for( var i = 0; i < data.results.length; i++) {
         if (data.results[i].text && data.results[i].text.indexOf('<') !== 0) {
           if (data.results[i].roomname === room || room === 'initialStartup') {
             app.addMessage(data.results[i]);
-            if (unique.indexOf(data.results[i].roomname) === -1) {
-              unique.push(data.results[i].roomname);
+            if (app.unique.indexOf(data.results[i].roomname) === -1) {
+              app.unique.push(data.results[i].roomname);
               app.addRoom(data.results[i].roomname);
             }
           }
@@ -70,12 +70,11 @@ app.addMessage = function(message) {
 }
 
 app.addRoom = function(room) {
-	$('#roomSelect').append("<option value = "+room+">"+room+"</option>");
+	$('#roomSelect').append("<option value = "+JSON.stringify(room)+">"+room+"</option>");
 }
 
 $(document).ready(function(){
   app.init();
-
 
 	$('#roomSelect').change(function() {
 		var $room = $('#roomSelect').val();
@@ -89,6 +88,7 @@ $(document).ready(function(){
       	username: decodeURI(window.location.search).slice(10)
       }
       app.send(message);
-      app.addMessage(message);
+      app.addMessage(message)
+      app.fetch($('#roomSelect').val());
 	})
 })
