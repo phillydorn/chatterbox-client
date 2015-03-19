@@ -3,7 +3,8 @@
 var app = {
  server: 'https://api.parse.com/1/classes/chatterbox',
  unique: [],
- username : "anonymous"
+ username : "anonymous",
+ friends: {}
 };
 
 app.init = function() {
@@ -68,7 +69,8 @@ app.clearMessages = function() {
 
 app.addMessage = function(message) {
 
-	$('#chats').append("<div class = 'chat'><p class = username>"+message.username+"</p><p class = msg>"+message.text+"</p></div>");
+	$('#chats').append("<div class = 'chat'><p class = username>"+message.username+"</p><p class = msg>"+message.text+"</p></div>")
+  $('#chats div:last-child .username').addClass(message.username);
 }
 
 app.addRoom = function(room) {
@@ -78,6 +80,24 @@ app.addRoom = function(room) {
 app.roomRefresh = function() {
   var $room = $('#roomSelect').val();
   app.fetch($room);
+}
+
+app.makeFriends = function (friend) {
+  app.friends[friend.text()] = true;
+  // console.log(app.friends[friend.val()]);
+  // console.log(this.friends)
+  console.log('Make friedns runs')
+  // // for (var key in app.friends){
+    // var temp = app.friends[key]
+    var temp = friend.text();
+    var friends = document.getElementsByClassName('username ' + temp)
+    console.log(friends)
+    Array.prototype.forEach.call(friends, function (friend) {
+      $(friend).addClass('friend');
+  });
+  // if ($(this).hasClass(friend.val())) {
+  //   $(this).addClass('friend');
+  // }
 }
 
 $(document).ready(function(){
@@ -106,5 +126,8 @@ $(document).ready(function(){
   $('.roomBtn').click(function () {
     app.addRoom($('.roomBox').val());
     $('.roomBox').val('');
+  })
+  $(document).on('click', '.username', function() {
+    app.makeFriends($(this));
   })
 })
