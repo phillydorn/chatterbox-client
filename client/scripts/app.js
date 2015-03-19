@@ -5,7 +5,7 @@ var app = {
 };
 
 app.init = function() {
-
+  app.fetch('initialStartup')
 }
 
 app.send = function(message) {
@@ -25,28 +25,24 @@ app.send = function(message) {
 }
 
 app.fetch = function(room) {
-	 var room = room || 'all'
-      $.ajax({
+     $.ajax({
 	  url: app.server,
 	  type: 'GET',
 	  contentType: 'application/json',
 	  data: {'order': '-createdAt'},
 	  success: function (data) {
   		app.clearMessages();
-	    for( var i = 0; i < data.results.length; i++) {
-
+      var unique = []
+      for( var i = 0; i < data.results.length; i++) {
         if (data.results[i].text && data.results[i].text.indexOf('<') !== 0) {
-          if (data.results[i].roomname === room) {
-      			app.addMessage(data.results[i]); 
+          if (data.results[i].roomname === room || room === 'initialStartup') {
+            app.addMessage(data.results[i]);
+            if (unique.indexOf(data.results[i].roomname) === -1) {
+              unique.push(data.results[i].roomname);
+              app.addRoom(data.results[i].roomname);
+            }
           }
         }
-      //   // var unique = []
-      //   if (!unique.indexOf(data.results[i].roomname)) {
-      //     unique.push(data.results[i].roomname);
-      //   }
-      // }
-      // for (var j = 0; j < unique.length; j++) {
-      //   app.addRoom(unique[j]);
       }
 
        //  if (room === 'all') {
@@ -78,7 +74,7 @@ app.addRoom = function(room) {
 }
 
 $(document).ready(function(){
-  // app.fetch();
+  app.init();
 
 
 	$('#roomSelect').change(function() {
