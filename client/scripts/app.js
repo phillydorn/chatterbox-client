@@ -37,27 +37,41 @@ app.fetch = function(room) {
 	  success: function (data) {
   		app.clearMessages();
       data = app.checkForSpam(data);
-      for( var i = 0; i < data.results.length; i++) {
-        if (data.results[i].text && data.results[i].text.indexOf('<') !== 0) {
-            if (!(data.results[i].roomname in app.unique)) {
-              app.unique[data.results[i].roomname] = true;
-              app.addRoom(data.results[i].roomname);
-            }
-          if (data.results[i].roomname === room || room === 'initialStartup') {
-            app.addMessage(data.results[i]);
-          }
-        }
-      }	  
-	  },
-	  error: function (data) {
-	    // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
-	    console.error('chatterbox: Failed to retrieve message');
-	  }
-	 });
+      app.updateRooms(data);
+      app.addMessages(data,room);
+    },
+    error: function (data) {
+      // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
+      console.error('chatterbox: Failed to retrieve message');
+    }
+   });
 
  }
-app.checkForSpam = function() {
 
+app.addMessages = function(data, room) {
+  data.forEach(function(value) {
+    if (value.roomname === room || room === 'initialStartup') {
+      app.addMessage(value);
+    }
+  })
+}
+
+app.updateRooms = function(data) {
+  data.forEach(function(value){
+    if (!(value.roomname in app.unique)) {
+      app.unique[value.roomname] = true;
+      app.addRoom(value.roomname);
+    }  
+  })  
+}
+app.checkForSpam = function(data) {
+  var results = [];
+  data.results.forEach(function(value){
+    if (value.text && value.text.indexOf('<') !== 0) {
+      results.push(value);
+    }
+  })
+  return results;    
 }
 app.clearMessages = function() {
 	$('#chats').children().remove();
