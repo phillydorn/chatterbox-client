@@ -1,5 +1,42 @@
 // YOUR CODE HERE:
 
+var Message = Backbone.Model.extend({
+
+});
+
+var Messages = Backbone.Collection.extend({
+  model: Message,
+  url: 'https://api.parse.com/1/classes/chatterbox',
+  loadMsgs: function(){
+    this.fetch({data: {order: 'createdAt'}})
+  },
+  parse: function(response, options) {
+    return response.results;
+  },
+});
+
+var MessageView = Backbone.View.extend({
+
+  template: _.template('<div>%= text %</div>'),
+
+  render: function() {
+    return this.template(this.model.attributes);
+  },
+});
+
+var MessagesView = Backbone.View.extend({
+  render: function(){
+    this.collection.forEach(this.renderMessage, this);
+  },
+
+  renderMessage: function(message) {
+    var messageView = new MessageView({model: message});
+    var $html = messageView.render();
+    $('#chats').prepend($html);
+  }
+});
+
+
 var app = {
  server: 'https://api.parse.com/1/classes/chatterbox',
  unique: {},
