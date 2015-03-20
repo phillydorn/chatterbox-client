@@ -7,17 +7,21 @@ var Message = Backbone.Model.extend({
 var Messages = Backbone.Collection.extend({
   model: Message,
   url: 'https://api.parse.com/1/classes/chatterbox',
+  initialize: function(){
+    this.loadMsgs();
+  },
   loadMsgs: function(){
     this.fetch({data: {order: 'createdAt'}})
+    console.log(this);
   },
   parse: function(response, options) {
     return response.results;
-  },
+  }
 });
 
 var MessageView = Backbone.View.extend({
 
-  template: _.template('<div>%= text %</div>'),
+  template: _.template('<div>%=text%</div>'),
 
   render: function() {
     return this.template(this.model.attributes);
@@ -25,11 +29,19 @@ var MessageView = Backbone.View.extend({
 });
 
 var MessagesView = Backbone.View.extend({
+
+  initialize: function() {
+    console.log('before render');
+    this.collection.forEach(function(val){console.log(val)})
+    this.render();
+    console.log('after render');
+  },
   render: function(){
     this.collection.forEach(this.renderMessage, this);
   },
 
   renderMessage: function(message) {
+    console.log('render message')
     var messageView = new MessageView({model: message});
     var $html = messageView.render();
     $('#chats').prepend($html);
@@ -148,8 +160,14 @@ app.makeFriends = function (friend) {
 }
 
 $(document).ready(function(){
-  app.init();
+  // app.init();
+  var message = new Message();
+  var messages = new Messages();
+  messages.loadMsgs();
+  var messagesView = new MessagesView({collection: messages});
 
+
+ 
 	$('#roomSelect').change(function() {
 		app.roomRefresh();
 	})
