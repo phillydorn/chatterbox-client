@@ -2,7 +2,7 @@
 
 var app = {
  server: 'https://api.parse.com/1/classes/chatterbox',
- unique: [],
+ unique: {},
  username : "anonymous",
  friends: {}
 };
@@ -36,24 +36,18 @@ app.fetch = function(room) {
 	  data: {'order': '-createdAt'},
 	  success: function (data) {
   		app.clearMessages();
+      data = app.checkForSpam(data);
       for( var i = 0; i < data.results.length; i++) {
         if (data.results[i].text && data.results[i].text.indexOf('<') !== 0) {
-            if (app.unique.indexOf(data.results[i].roomname) === -1) {
-              app.unique.push(data.results[i].roomname);
+            if (!(data.results[i].roomname in app.unique)) {
+              app.unique[data.results[i].roomname] = true;
               app.addRoom(data.results[i].roomname);
             }
           if (data.results[i].roomname === room || room === 'initialStartup') {
             app.addMessage(data.results[i]);
           }
         }
-      }
-
-       //  if (room === 'all') {
-       //   app.addMessage(data.results[i]);
-         
-       //  }  else if (data.results[i].roomname === room){
-		  
-		
+      }	  
 	  },
 	  error: function (data) {
 	    // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -62,7 +56,9 @@ app.fetch = function(room) {
 	 });
 
  }
+app.checkForSpam = function() {
 
+}
 app.clearMessages = function() {
 	$('#chats').children().remove();
 }
